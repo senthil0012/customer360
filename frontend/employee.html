@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Customer 360 — Employee Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b1320;--panel:#13223d;--panel-2:#101b33;--side:#111a2e;
+      --text:#e0e6f1;--muted:#9cb2d9;--hover:#1e2a45;--input:#192a4b;
+      --brand:#1967ff;
+    }
+    body{background:var(--bg);color:var(--text);overflow-x:hidden}
+    .sidebar{
+      position:fixed;top:0;left:0;height:100vh;width:240px;background:var(--side);
+      display:flex;flex-direction:column;justify-content:space-between;padding-top:1rem
+    }
+    .sidebar .nav-link{color:var(--muted);font-weight:500;border-radius:8px;margin:4px 8px}
+    .sidebar .nav-link.active,.sidebar .nav-link:hover{background:var(--hover);color:#fff}
+    .main{margin-left:250px;padding:16px}
+    .topbar{background:var(--panel-2);padding:14px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .topbar img{width:60px;height:60px;border-radius:50%;object-fit:cover}
+    .card{background:var(--panel);border:none;color:var(--text)}
+    .table-dark{color:#cfd6e3}
+    .form-control,.form-select,textarea{background:var(--input)!important;color:var(--text)!important;border:none!important}
+    .form-control::placeholder,textarea::placeholder{color:#8aa1ca!important}
+    .btn-primary{background:var(--brand);border:none}
+    .photo-preview{width:100%;border-radius:10px;margin-top:10px}
+    .small-note{color:#9db3da;font-size:.85rem}
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div>
+      <h5 class="text-center text-light mb-4">Customer 360</h5>
+      <ul class="nav flex-column">
+        <li><a class="nav-link active" href="#" onclick="showTab('profile')"><i class="bi bi-person-circle me-2"></i>Profile</a></li>
+        <li><a class="nav-link" href="#" onclick="showTab('allocation')"><i class="bi bi-people-fill me-2"></i>Allocation</a></li>
+        <li><a class="nav-link" href="#" onclick="showTab('search')"><i class="bi bi-search me-2"></i>Search</a></li>
+        <li><a class="nav-link" href="#" onclick="showTab('attendance')"><i class="bi bi-clock-history me-2"></i>Attendance</a></li>
+        <li><a class="nav-link" href="#" onclick="showTab('ads')"><i class="bi bi-megaphone me-2"></i>Ads</a></li>
+      </ul>
+    </div>
+    <div class="p-3 text-center">
+      <button class="btn btn-outline-light btn-sm w-100" onclick="logout()"><i class="bi bi-box-arrow-right me-1"></i>Logout</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="d-flex align-items-center gap-3">
+        <img id="empPhoto" src="https://via.placeholder.com/60x60" alt="">
+        <div>
+          <h6 id="empName" class="mb-0">Ravi Kumar</h6>
+          <small id="empManager" class="text-secondary">Reporting: Vishal Singh</small>
+        </div>
+      </div>
+      <div id="currentDate"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="profileTab" class="tab-content">
+      <div class="card p-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-person-badge me-2"></i>Employee Profile</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Employee ID</label>
+            <input id="pf_id" class="form-control" value="EMP001" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Employee Name</label>
+            <input id="pf_name" class="form-control" value="Ravi Kumar" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Designation</label>
+            <input id="pf_desig" class="form-control" value="Field Executive" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Reporting Manager</label>
+            <input id="pf_mgr" class="form-control" value="Vishal Singh" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Date of Birth</label>
+            <input id="pf_dob" type="date" class="form-control" value="1992-03-14" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Date of Joining</label>
+            <input id="pf_doj" type="date" class="form-control" value="2022-07-10" readonly>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Address</label>
+            <textarea id="pf_addr" rows="2" class="form-control" readonly>Hyderabad, Telangana</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALLOCATION -->
+    <div id="allocationTab" class="tab-content d-none">
+      <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold m-0"><i class="bi bi-people-fill me-2"></i>My Allocations</h5>
+          <button class="btn btn-outline-light btn-sm" onclick="downloadAllocCSV()"><i class="bi bi-download me-1"></i>Download CSV</button>
+        </div>
+        <div class="small-note mt-1">Full dataset as per Section 3.3 (Name, Phone, Address, Pin, Principal, Total Outstanding, EMI, Overdue, Office, Process, Portfolio, Asset)</div>
+        <div class="table-responsive mt-2">
+          <table class="table table-dark table-striped align-middle">
+            <thead>
+              <tr>
+                <th>#</th><th>Name</th><th>Phone</th><th>Address</th><th>Pin</th>
+                <th>Principal</th><th>Total</th><th>EMI</th><th>Overdue</th>
+                <th>Office</th><th>Process</th><th>Portfolio</th><th>Asset</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="alloc_tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Feedback (with native camera + GPS) -->
+      <div class="card p-3">
+        <h5 class="fw-bold mb-3"><i class="bi bi-pencil-square me-2"></i>Report Feedback</h5>
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <label class="form-label">Customer</label>
+            <select id="fb_customer" class="form-select"></select>
+          </div>
+          <div class="col-lg-6">
+            <label class="form-label">Notes</label>
+            <textarea id="fb_notes" class="form-control" rows="2" placeholder="Write visit outcome, promise to pay, next follow-up date, etc."></textarea>
+          </div>
+
+          <div class="col-lg-6">
+            <label class="form-label">Proof Photo</label>
+            <!-- Native camera: opens device camera app on mobile -->
+            <input id="fb_photo" class="form-control" type="file" accept="image/*" capture="environment" onchange="previewNativePhoto(event)">
+            <img id="photoPreview" class="photo-preview d-none" alt="Preview">
+            <div class="small-note mt-1">Tap to open camera (mobile) or choose an image (desktop).</div>
+          </div>
+
+          <div class="col-lg-6">
+            <label class="form-label">GPS Location</label>
+            <div class="input-group">
+              <input id="fb_lat" class="form-control" placeholder="Latitude" readonly>
+              <input id="fb_lng" class="form-control" placeholder="Longitude" readonly>
+              <button class="btn btn-outline-light" onclick="getLocation()">📍</button>
+            </div>
+            <button class="btn btn-primary mt-3 w-100" onclick="submitFeedback()">Submit Feedback</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div id="searchTab" class="tab-content d-none">
+      <div class="card p-3">
+        <h5 class="fw-bold"><i class="bi bi-search me-2"></i>Search Customer History</h5>
+        <div class="input-group mb-3 mt-2">
+          <input id="search_input" class="form-control" placeholder="Enter customer name or phone">
+          <button class="btn btn-primary" onclick="searchCustomer()">Search</button>
+        </div>
+        <div id="search_results" class="mt-3"></div>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div id="attendanceTab" class="tab-content d-none">
+      <div class="card p-3">
+        <h5 class="fw-bold"><i class="bi bi-clock-history me-2"></i>Attendance</h5>
+        <div class="d-flex gap-2 mt-2">
+          <button class="btn btn-success flex-fill" onclick="checkIn()">Check In</button>
+          <button class="btn btn-danger flex-fill" onclick="checkOut()">Check Out</button>
+        </div>
+        <hr>
+        <div class="table-responsive">
+          <table class="table table-dark table-striped">
+            <thead><tr><th>Date</th><th>Login</th><th>Logout</th><th>Status</th></tr></thead>
+            <tbody id="att_tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADS -->
+    <div id="adsTab" class="tab-content d-none">
+      <div class="card p-3">
+        <h5 class="fw-bold"><i class="bi bi-megaphone me-2"></i>Incentives & Announcements</h5>
+        <div id="adCarousel" class="carousel slide mt-3" data-bs-ride="carousel">
+          <div class="carousel-inner" id="ad_inner"></div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#adCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#adCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.main -->
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+
+    /* -------------------- Mock Data -------------------- */
+    const allocations = [
+      {
+        id:1, name:"Ajay Singh", phone:"9998887770", address:"Hyderabad", pin:"500001",
+        principal:100000, total:120000, emi:10000, overdue:2000,
+        office:"Main Branch", process:"Pending", portfolio:"PL-2023", asset:"A123"
+      },
+      {
+        id:2, name:"Meena Devi", phone:"8887776660", address:"Vijayawada", pin:"520001",
+        principal:75000, total:85000, emi:8000, overdue:0,
+        office:"Coastal Branch", process:"Follow-up", portfolio:"HL-2021", asset:"H221"
+      }
+    ];
+    let feedbacks = [];  // {id, customer, notes, photo, lat, lng, date}
+    let attendance = []; // {date, login, logout, status}
+    const ads = [
+      {title:"Incentive Plan – November", img:"https://via.placeholder.com/800x300?text=Incentive+Plan"},
+      {title:"Festive Bonus", img:"https://via.placeholder.com/800x300?text=Festive+Bonus"}
+    ];
+
+    /* -------------------- Tabs -------------------- */
+    function showTab(tab){
+      document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+      event.target.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('d-none'));
+      $(`${tab}Tab`).classList.remove('d-none');
+    }
+
+    /* -------------------- Allocation -------------------- */
+    function renderAllocations(){
+      const t = $('alloc_tbody'); t.innerHTML='';
+      allocations.forEach((a,i)=>{
+        t.innerHTML += `<tr>
+          <td>${i+1}</td>
+          <td>${a.name}</td><td>${a.phone}</td><td>${a.address}</td><td>${a.pin}</td>
+          <td>${a.principal}</td><td>${a.total}</td><td>${a.emi}</td><td>${a.overdue}</td>
+          <td>${a.office}</td><td>${a.process}</td><td>${a.portfolio}</td><td>${a.asset}</td>
+          <td><button class="btn btn-sm btn-outline-light" onclick='selectFeedback(${a.id})'>Report</button></td>
+        </tr>`;
+      });
+      $('fb_customer').innerHTML = allocations.map(a=>`<option value="${a.id}">${a.name} (${a.phone})</option>`).join('');
+    }
+
+    function selectFeedback(id){
+      $('fb_customer').value = String(id);
+      showTab('allocation');
+    }
+
+    // CSV download
+    function downloadAllocCSV(){
+      if(!allocations.length){ alert("No allocations"); return; }
+      const header = ["Name","Phone","Address","Pin","Principal","TotalOutstanding","EMIAmount","EMIOverdue","OfficeAddress","ProcessStatus","Portfolio","AssetDetails"];
+      const rows = allocations.map(a => [a.name,a.phone,a.address,a.pin,a.principal,a.total,a.emi,a.overdue,a.office,a.process,a.portfolio,a.asset]);
+      const csv = [header.join(","), ...rows.map(r=>r.join(","))].join("\n");
+      const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = "my_allocations.csv";
+      a.click();
+    }
+
+    // Native camera file input preview
+    function previewNativePhoto(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        $('photoPreview').src = reader.result;
+        $('photoPreview').classList.remove('d-none');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // GPS
+    function getLocation(){
+      if(!navigator.geolocation) return alert("Location not supported");
+      navigator.geolocation.getCurrentPosition(pos=>{
+        $('fb_lat').value = pos.coords.latitude.toFixed(6);
+        $('fb_lng').value = pos.coords.longitude.toFixed(6);
+      }, ()=>alert("Unable to fetch location"));
+    }
+
+    // Submit feedback (mock)
+    function submitFeedback(){
+      const custId = +$('fb_customer').value;
+      const cust = allocations.find(a=>a.id===custId);
+      if(!cust){ alert("Select a customer"); return; }
+      const notes = $('fb_notes').value.trim();
+      const photo = $('photoPreview').src || "";
+      const lat = $('fb_lat').value, lng = $('fb_lng').value;
+
+      feedbacks.push({
+        id: Date.now(),
+        customer: cust.name,
+        notes, photo, lat, lng,
+        date: new Date().toLocaleString()
+      });
+
+      alert("Feedback submitted (mock)");
+      $('fb_notes').value = ''; $('fb_photo').value = ''; $('photoPreview').classList.add('d-none');
+      $('fb_lat').value=''; $('fb_lng').value='';
+    }
+
+    /* -------------------- Search (history) -------------------- */
+    function searchCustomer(){
+      const q = $('search_input').value.toLowerCase();
+      const res = feedbacks.filter(f =>
+        f.customer.toLowerCase().includes(q) ||
+        (allocations.find(a=>a.name===f.customer)?.phone || '').includes(q)
+      );
+      $('search_results').innerHTML = res.length ? res.map(r=>`
+        <div class="card p-2 mb-2">
+          <strong>${r.customer}</strong><br>
+          ${r.notes || '-'}<br>
+          <small>${r.date}</small><br>
+          ${r.lat && r.lng ? `${r.lat}, ${r.lng}` : ''}
+          ${r.photo ? `<img src="${r.photo}" class="photo-preview mt-2">` : ''}
+        </div>
+      `).join('') : `<p>No records found.</p>`;
+    }
+
+    /* -------------------- Attendance -------------------- */
+    function renderAttendance(){
+      $('att_tbody').innerHTML = attendance.map(a=>`
+        <tr><td>${a.date}</td><td>${a.login}</td><td>${a.logout}</td><td>${a.status}</td></tr>
+      `).join('');
+    }
+    function checkIn(){
+      const d=new Date(), date=d.toISOString().slice(0,10);
+      if(attendance.find(a=>a.date===date)) return alert("Already checked in!");
+      attendance.push({date,login:d.toLocaleTimeString(),logout:'',status:'PRESENT'});
+      renderAttendance(); alert("Checked in!");
+    }
+    function checkOut(){
+      const d=new Date(), date=d.toISOString().slice(0,10);
+      const rec=attendance.find(a=>a.date===date);
+      if(!rec) return alert("Not checked in yet!");
+      rec.logout=d.toLocaleTimeString();
+      renderAttendance(); alert("Checked out!");
+    }
+
+    /* -------------------- Ads -------------------- */
+    function renderAds(){
+      $('ad_inner').innerHTML = ads.map((a,i)=>`
+        <div class="carousel-item ${i===0?'active':''}">
+          <img src="${a.img}" class="d-block w-100 rounded" alt="${a.title}">
+          <div class="carousel-caption d-none d-md-block"><h5>${a.title}</h5></div>
+        </div>
+      `).join('');
+    }
+
+    /* -------------------- Common -------------------- */
+    function logout(){ alert("Logged out"); location.reload(); }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      $('currentDate').innerText = new Date().toDateString();
+      renderAllocations(); renderAttendance(); renderAds();
+      // default select first customer
+      if(allocations.length) $('fb_customer').value = String(allocations[0].id);
+    });
+  </script>
+</body>
+</html>
